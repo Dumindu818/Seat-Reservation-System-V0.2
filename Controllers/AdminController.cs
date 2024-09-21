@@ -1,17 +1,26 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Seat_Reservation_System.Models;
 using System.Diagnostics;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Seat_Reservation_System.Controllers
 {
     public class AdminController : Controller
     {
+        private readonly string _connectionString;
+     
+
         private readonly ApplicationDbContext _context;
-        public AdminController(ApplicationDbContext context)
+
+        public AdminController(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
         }
+
         // GET: Admin/Login
         public IActionResult Login()
         {
@@ -155,7 +164,74 @@ namespace Seat_Reservation_System.Controllers
             return RedirectToAction("AdminInquiries");
         }
 
+        [HttpGet]
+        public IActionResult GetBookingsByDate(string date,string number)
+        {
+            var bookings = new List<Bookings>();
+            string query = "SELECT * FROM Booking WHERE BookDateTime = @date AND SeatNumber = @seatNumber AND isExpire = 0";
 
+            if (string.IsNullOrEmpty(date))
+            {
+                Console.Write("Missing");
+            }
+
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                using (SqlCommand command = new SqlCommand(query, conn))
+                {
+                    command.Parameters.AddWithValue("@date", date);
+                    command.Parameters.AddWithValue("@seatNumber", number);
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            bookings.Add(new Bookings
+                            {
+                                BookId = (int)reader["BookId"],
+                                SeatNumber = reader["SeatNumber"]?.ToString() ?? string.Empty,
+                                BookDateTime = (DateTime)reader["BookDateTime"],
+                                TraineeID = reader["TraineeId"].ToString(),
+                                TraineeNIC = reader["TraineeNIC"].ToString(),
+                                TraineeName = reader["TraineeName"].ToString()
+
+                            });
+
+                        }
+                        reader.Close();
+                        
+                    }
+
+                }
+            }
+            return Json(bookings);
+
+        }
+
+        [HttpGet]
+        public IActionResult DeleteBookingsBySeatID(int id)
+        {
+            
+            string query = "UPDATE Booking SET isExpire = 1 WHERE BookId = @id";
+            
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                using (SqlCommand command = new SqlCommand(query, conn))
+                {
+                    command.Parameters.AddWithValue("@id", id);
+                    int exe = command.ExecuteNonQuery();
+
+                    if (exe > 0)
+                    {
+                        return Ok();
+                    }
+                  
+                }
+            }
+
+            return BadRequest();
+        }
 
     }
 }
