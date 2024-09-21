@@ -1,0 +1,1024 @@
+﻿@{
+    Layout = null;
+    ViewBag.Title = "User Profile";
+}
+
+@{
+   
+    // Define the number of groups and buttons per row
+    int group10Rows = 10;
+    int group10ButtonsPerRow = 4;
+
+    int group9Rows = 10;
+    int group9ButtonsPerRow = 4;
+
+
+    int count = 1;
+
+
+
+    var seatid = "";
+    //int id = 0;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Now</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="~/css/confirmation.css" />
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-image: url('/assets/images/background.png');
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .admin-dashboard {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            position: relative;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            justify-content: space-between;
+        }
+
+        .logo-container {
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-bg-void-1 {
+            width: 100%;
+            height: 120px;
+            background: url('/assets/images/logo_bg_void_1.png') center/contain no-repeat;
+        }
+
+        .nav-items {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            flex-grow: 0.5;
+            justify-content: center;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            cursor: pointer;
+        }
+
+            .nav-item .icon {
+                width: 40px;
+                height: 40px;
+            }
+
+            .nav-item .nav-text {
+                font-weight: 600;
+                font-size: 24px;
+                color: #00B5EC;
+            }
+
+            .nav-item .nav-textsl {
+                font-weight: 600;
+                font-size: 24px;
+                color: #4DB848;
+            }
+
+            .nav-item .logout {
+                color: #DD5353;
+            }
+
+        .logout-container {
+            margin-top: auto;
+            margin-bottom: 30px;
+        }
+
+        .content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #00B5EC;
+            padding: 40px;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            width: 100%;
+            padding: 20px;
+        }
+
+        .admin-btn {
+            display: flex;
+            align-items: center;
+            gap: 20px; /* Reduced gap for better alignment */
+            background: none;
+            border: none;
+            cursor: pointer;
+            position: absolute;
+            top: 20px;
+            right: 40px; /* Adjust the positioning to be on the top right */
+            z-index: 10; /* Ensure 'User' text and icon are above other elements */
+            
+        }
+
+            .admin-btn .admin {
+                font-weight: 600;
+                font-size: 48px;
+                color: #00B5EC;
+            }
+
+            .admin-btn:hover .admin {
+                font-weight: 600;
+                font-size: 48px;
+                color: #00B5EC;
+                background-color:none;
+                color: #4DB848;
+            }
+
+            .admin-btn .adminsl {
+                font-weight: 600;
+                font-size: 48px;
+                color: #4DB848;
+            }
+
+            .admin-btn .user-icon img {
+                width: 60px;
+                height: 60px;
+            }
+
+        .container-4 {
+            border-radius: 30px;
+            background: #FFFFFF;
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px; /* Padding for internal content */
+            width: 1150px;
+            height: 510px;
+            box-sizing: content-box;
+            margin-top: 110px; /* Increased margin to prevent overlapping with the header */
+          
+
+        .container-5 {
+            display: flex;
+            flex-direction: row;
+            width: 30%;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .profile-overview {
+            width: 100%;
+            font-weight: 600;
+            font-size: 40px;
+            color: #00B5EC;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+
+
+        .edit-3-svgrepo-com {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+        }
+
+        .line-1 {
+            background: #00B5EC;
+            width: 100%;
+            height: 2px;
+            margin: 20px 0;
+        }
+
+        .username, .email {
+            font-weight: 600;
+            font-size: 20px;
+            color: #00B5EC;
+            width: 10%;
+        }
+
+        .group-1, .group-29 {
+            border-radius: 30px;
+            background: rgba(192, 249, 255, 0.28);
+            padding: 10px 20px;
+            width: 60%;
+            box-sizing: border-box;
+        }
+
+        .user-1, .usergmail-com {
+            font-weight: 500;
+            font-size: 20px;
+            color: #00B5EC;
+        }
+
+        .empty-area {
+            height: 60px;
+        }
+
+        .group-13 {
+            border-radius: 30px;
+            background: #00B5EC;
+            position: relative;
+            text-align: center;
+            padding: 5px 5px 5px 5px;
+            width: 200px;
+            margin-top: 400px;
+            box-sizing: border-box;
+            align-items: center;
+        }
+
+        .pay-now-1 {
+            overflow-wrap: break-word;
+            font-family: 'Poppins';
+            font-weight: 600;
+            font-size: 36px;
+            color: #FFFFFF;
+            text-align: center;
+        }
+
+        .container-7 {
+            margin: 0 0 36px 12.4px;
+            display: flex;
+            flex-direction: row;
+            width: fit-content;
+            box-sizing: border-box;
+        }
+        
+
+        .container-50 {
+           
+            display: flex;
+            flex-direction: row;
+            width: fit-content;
+            box-sizing: border-box;
+            font-size: 12px;
+        }
+
+        .search-by-date {
+            margin-top: 3vh;
+            margin-bottom: 2vh;
+            display: flex;
+            justify-content: center;
+            overflow-wrap: break-word;
+            font-family: 'Poppins';
+            font-weight: 600;
+            font-size: 30px;
+            color: #00B5EC;
+        }
+
+        .calendar-container {
+            display: inline-block;
+            border-radius: 20px;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #F6F6F6;
+            margin-bottom: 2vh;
+            
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+            .calendar-header button {
+                background-color: #00B5EC;
+                color: white;
+                border: none;
+                padding: 5px 10px;
+                cursor: pointer;
+                border-radius: 5px;
+            }
+
+            .calendar-header .month-year {
+                font-weight: bold;
+                font-size: 15px;
+            }
+
+        .calendar-body {
+            margin-top: 10px;
+            font-size: 15px;
+        }
+
+        .day-names, .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            text-align: center;
+        }
+
+            .day-names span {
+                font-weight: bold;
+            }
+
+            .days span {
+                padding: 10px;
+                cursor: pointer;
+                border-radius: 5px;
+                transition: background-color 0.3s;
+            }
+
+                .days span:hover {
+                    background-color: #00B5EC;
+                    color:white;
+                }
+
+                .days span.selected {
+                    background-color: #4DB848;
+                    color: white;
+                }
+
+        #selected-date {
+            margin-top: 10px;
+            padding: 5px;
+            width: 90%;
+            font-size: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .group-14 {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 2vh;
+        }
+
+        .confirm {
+            overflow-wrap: break-word;
+            font-family: 'Poppins';
+            font-weight: 600;
+            font-size: 20px;
+            color: white;
+            background: #00B5EC;
+            margin-left: -6vh;
+            padding: 10px;
+            display: flex;
+            position: relative;
+            border-radius: 30px;
+            width: 40vh;
+            justify-content: center;
+            border: 0px white;
+            cursor: pointer;
+        }
+
+        .confirm:hover {
+            overflow-wrap: break-word;
+            font-family: 'Poppins';
+            font-weight: 600;
+            font-size: 20px;
+            color: white;
+            background: #4DB848;
+                margin-left: -6vh;
+            padding: 10px;
+            display: flex;
+            position: relative;
+            border-radius: 30px;
+            width: 40vh;
+            justify-content: center;
+            border: 0px white;
+            cursor: pointer;
+        }
+
+        .group-10 {
+            margin-right: 30px;
+        }
+
+        .container-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .container {
+            flex: 1;
+            margin: 0 5px;
+        }
+
+        .group-10 button {
+            width: 10vh;
+            padding: 10px;
+            background-color: #D9D9D9;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+        }
+
+        .group-9 button {
+            width: 10vh;
+            padding: 10px;
+            background-color: #D9D9D9;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #00B5EC;
+        }
+
+        .container-50 {
+            display: flex;
+            margin-top: -2vh;
+        }
+
+        .search-by-date {
+            font-size: 25px;
+            font-family: Arial, sans-serif;
+            margin-left:-2vh;
+            
+        }
+
+        .booking-id {
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            padding: 10px;
+            text-align: center;
+            color: #4DB848;
+            font-size: 25px;
+        }
+
+        .date-and-time-compact-expanded {
+            padding-right: 40px;
+            
+        }
+
+        .group-9, .group-10 {
+            margin: 30px;
+            margin-top: -5vh;
+        }
+    </style>
+
+</head>
+<body>
+
+	<div class="user-payment-completed" style="margin-left:69vh;">
+		<div class="rectangle-6">
+			<img class="checkmark-icon" src="~/assets/vectors/vector_56_x2.svg" alt="Checkmark" />
+			<div class="your-booking-has-been-confirmed">Your booking has been confirmed.</div>
+			<div class="booking-id">Booking ID : <span id="booking-idReq"></span>
+				<div>Booking Trainee ID : <span id="booking-Trid"></span></div>
+				<div>Booking Date : <span id="booking-Date"></span></div>
+				<div>Booking Seat Number : <span id="booking-SNum"></span></div>
+			</div>
+			<div id="qrCodeContainer"></div>
+			<div class="button-container">
+				<a onclick="downloadPdf()" class="button">Download Ticket</a>
+				<a onClick="" class="button">Email Ticket</a>
+			</div>
+			<a href="#" class="back-button" onclick="location.href='@Url.Action("UserMyBookings", "User")'">Back to Dashboard</a>
+		</div>
+	</div>
+
+    <div class="admin-dashboard">
+        <div class="sidebar">
+            <div class="logo-container">
+                <div class="logo-bg-void-1"></div>
+            </div>
+            <div class="nav-items">
+                <a href="@Url.Action("Dashboard", "User")" style="text-decoration: none;">
+                <div class="nav-item">
+                    <img class="icon" src="~/assets/vectors/vector_16_x2.svg" />
+                    <span class="nav-text">Home</span>
+                </div>
+                </a>
+                <a href="@Url.Action("UserBookNow", "User")" style="text-decoration: none;">
+                    <div class="nav-item">
+                        <img class="icon" src="~/assets/vectors/vector_43_x2.svg" />
+                        <span class="nav-textsl">Book Now</span>
+                    </div>
+                </a>
+                <a href="@Url.Action("UserMyBookings", "User")" style="text-decoration: none;">
+                    <div class="nav-item">
+                        <img class="icon" src="~/assets/vectors/vector_26_x2.svg" />
+                        <span class="nav-text">My Bookings</span>
+                    </div>
+                </a>
+                <a href="@Url.Action("UserInquiries", "User")" style="text-decoration: none;">
+                    <div class="nav-item">
+                        <img class="icon" src="~/assets/vectors/mailed_svgrepo_com_6_x2.svg" />
+                        <span class="nav-text">Inquiries</span>
+                    </div>
+                </a>
+            </div>
+            <div class="logout-container">
+                <a href="@Url.Action("Index", "Home")" style="text-decoration: none;">
+                    <div class="nav-item">
+                        <img class="icon" src="~/assets/vectors/logout_svgrepo_com_x2.svg" />
+                        <span class="nav-text logout">Log Out</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="header">
+                <div class="admin-btn" onclick="location.href='@Url.Action("UserProfile", "User")'">
+                    <div class="user-icon">
+                        <img src="~/assets/vectors/vector_59_x2.svg" alt="User Icon">
+                    </div>
+                    <span class="admin">@ViewBag.Username</span>
+                </div>
+            </div>
+
+
+            <div class="container-4">
+                <span class="profile-overview">Book Now</span>
+               
+
+                <div class="container-50">
+                    <div class="container-30">
+                        <div class="search-by-date">
+                            Select Date
+                        </div>
+                        <div class="date-and-time-compact-expanded">
+                            <div class="calendar-container">
+                                <div class="calendar-header">
+                                    <button class="prev-month">&lt;</button>
+                                    <span class="month-year"></span>
+                                    <button class="next-month">&gt;</button>
+                                </div>
+                                <div class="calendar-body">
+                                    <div class="day-names">
+                                        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span>
+                                        <span>Thu</span><span>Fri</span><span>Sat</span>
+                                    </div>
+                                    <div class="days"></div>
+                                </div>
+                                <input type="text" id="selected-date" placeholder="Select Date" readonly>
+                            </div>
+                        </div>
+
+                        <div class="group-14">
+                            <button id="proceed" class="confirm">
+                                Confirm
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Group 10 -->
+                    <div class="group-10">
+                        @for (int row = 0; row < group10Rows; row++)
+                        {
+                            <div class="container-row">
+                                @for (int col = 0; col < group10ButtonsPerRow; col++)
+                                {
+                                    var index = (row * group10ButtonsPerRow) + col; // Calculate the index for button class array
+                                    var buttonId = $"seat{count}"; // Generate a unique ID for each button
+                                    var buttonClass = "my-button";
+                                    string seatNumber = seatid;
+
+                                    <div class="container">
+                                        <button id="@buttonId" class="@buttonClass">@($"Seat {count}")</button>
+                                    </div>
+                                    count++;
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Group 9 -->
+                    <div class="group-9">
+                        @for (int row = 0; row < group9Rows; row++)
+                        {
+                            <div class="container-row">
+                                @for (int col = 0; col < group9ButtonsPerRow; col++)
+                                {
+                                    var index = (row * group9ButtonsPerRow) + col; // Calculate the index for button class array
+                                    var buttonId = $"seat{count}"; // Generate a unique ID for each button
+                                    var buttonClass = "my-button";
+                                    <div class="container">
+                                        <button id="@buttonId" class="@buttonClass">@($"Seat {count}")</button>
+                                    </div>
+                                    count++;
+                                }
+                            </div>
+                        }
+                    </div>
+                
+            </div>
+        </div>
+       </div>
+
+
+
+        <script>
+            var username = '@ViewBag.Username';
+            var recieveData;
+            
+            /* Include the JavaScript code from above */
+            document.addEventListener('DOMContentLoaded', function () {
+
+                const selectedDateElement = document.getElementById('selected-date');
+                const calendar = document.querySelector('.calendar-container');
+                const monthYearElement = calendar.querySelector('.month-year');
+                const daysContainer = calendar.querySelector('.days');
+                const prevMonthButton = calendar.querySelector('.prev-month');
+                const nextMonthButton = calendar.querySelector('.next-month');
+
+                let currentDate = new Date();
+
+                // Render the calendar for the given date
+                function renderCalendar(date) {
+                    const year = date.getFullYear();
+                    const month = date.getMonth();
+                    const firstDay = new Date(year, month, 1).getDay();
+                    const lastDate = new Date(year, month + 1, 0).getDate();
+
+                    // Set the month and year title
+                    monthYearElement.textContent = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+                    // Clear previous days
+                    daysContainer.innerHTML = '';
+
+                    // Add empty spans for days of the previous month
+                    for (let i = 0; i < firstDay; i++) {
+                        daysContainer.innerHTML += `<span></span>`;
+                    }
+
+                    // Add days of the current month
+                    for (let i = 1; i <= lastDate; i++) {
+                        const dayElement = document.createElement('span');
+                        dayElement.textContent = i;
+                        dayElement.addEventListener('click', () => selectDate(new Date(year, month, i)));
+                        daysContainer.appendChild(dayElement);
+
+
+                    }
+                }
+                
+                // Handle date selection
+                function selectDate(date) {
+                    // Format the date to YYYY-MM-DD without UTC shift
+                    const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+                    // Set the input field value to the formatted date
+                    selectedDateElement.value = formattedDate;
+
+                    // Remove the 'selected' class from all days
+                    document.querySelectorAll('.days span').forEach(day => day.classList.remove('selected'));
+
+                    // Calculate the correct index for the nth-child selector
+                    const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+                    const index = date.getDate() + firstDayOfMonth;
+
+                    // Highlight the selected day
+                    const selectedDayElement = document.querySelector(`.days span:nth-child(${index})`);
+                    if (selectedDayElement) {
+                        selectedDayElement.classList.add('selected');
+                    }
+
+                    // Handle button clicks for seat selection
+                    const buttons = document.querySelectorAll('.container .my-button');
+                    let seatNumber;
+                    let clickedButton = null;
+
+                    buttons.forEach(button => {
+                        button.addEventListener('click', function () {
+
+                        });
+                    });
+
+                    buttons.forEach(button => {
+                        button.addEventListener('mouseenter', function () {
+                            if (this !== clickedButton) {
+                                this.style.backgroundColor = '#00B5EC'; // Hover background color
+                                this.style.color = 'white'; // Hover text color
+                                this.style.fontWeight = "bold";
+                            }
+                        });
+
+                        button.addEventListener('mouseleave', function () {
+                            // Check if the button is the one that was clicked
+                            if (this !== clickedButton) {
+                                this.style.backgroundColor = '#D9D9D9'; // Reset to default
+                                this.style.color = 'white'; // Reset text color
+                                this.style.fontWeight = "bold";
+                            }
+                        });
+
+                        button.addEventListener('click', function () {
+                            var buttonId = this.id;
+                            console.log('Clicked Button ID:', buttonId);
+                            seatNumber = buttonId.split('').filter(char => !isNaN(char)).join('');
+
+                            // Toggle the 'clicked' class
+                            const isClicked = this.classList.contains('clicked');
+                            this.classList.toggle('clicked');
+
+                            // Update the clickedButton reference
+                            clickedButton = this;
+
+                            // Apply styles based on click
+                            if (!isClicked) {
+                                this.style.backgroundColor = '#4DB848'; // Clicked background color
+                                this.style.color = 'white'; // Clicked text color
+                            }
+
+                            // Optionally, reset other buttons
+                            buttons.forEach(btn => {
+                                if (btn !== this) {
+                                    btn.classList.remove('clicked');
+                                    btn.style.backgroundColor = '#D9D9D9'; // Ensure other buttons reset to default
+                                    btn.style.color = 'white';
+                                }
+                            });
+                        });
+                    });
+
+                    var traineeName;
+                    var traineeNIC;
+
+                    function getUserByUsername(username) {
+                        $.ajax({
+                            url: '/Book/GetUsersById', // Update with your controller name
+                            type: 'GET',
+                            data: { username: username }, // Pass the username as a query parameter
+                            success: function (response) {
+                                // Assign the values from the response to variables
+                                 traineeName = response.traineeName;
+                                 traineeNIC = response.traineeNIC;
+                            },
+                            error: function (xhr, status, error) {
+                                console.error('Error fetching user details:', error);
+                            }
+                        });
+                    }
+
+
+                    // Function to fetch leave count using AJAX
+                    function getLeaveCount(username) {
+                        $.ajax({
+                            url: '/Book/GetCount',  // Adjust this to match your actual API endpoint
+                            type: 'GET',
+                            data: { username: username },
+                            success: function (response) {
+                                // Response is expected to be an integer
+                                var leaveCount = parseInt(response, 10);  // Convert response to an integer
+                                console.log("LeaveCount", leaveCount);
+                                if (!isNaN(leaveCount)) {
+                                    // Use the integer value
+                                    if (leaveCount !== 0) {
+                                        var button = document.getElementById('proceed');
+                                        button.disabled = true;
+                                        button.style.backgroundColor = 'grey';  // Set background color to grey
+                                        button.style.color = 'darkgrey';  // Set text color to dark grey
+                                        button.style.cursor = 'not-allowed';  // Change cursor to indicate the button is not clickable
+                                       
+                                        console.log('Disabled');
+                                    } else {
+                                        document.getElementById('proceed').disabled = false;
+                                        console.log('Enabled');
+                                    }
+                                } else {
+                                    console.error('Response is not a valid integer.');
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                // Handle errors
+                                console.error('Error fetching leave count:', error);
+                            }
+                        });
+                    }
+
+                    getLeaveCount(username);
+                    getUserByUsername(username);
+                    
+                    // Proceed button click handler
+                    $('#proceed').click(function () {
+                        var postData = {
+                            traineeID: username,
+                            traineeName: traineeName,
+                            bookDateTime: formattedDate,
+                            traineeNIC: traineeNIC,
+                            seatNumber: seatNumber
+                        };
+
+                        $.ajax({
+                            url: '/Book/AddRequest',
+                            type: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify(postData),
+                            success: function (response) {
+                                console.log('Data inserted successfully:', response);
+
+
+                                //$('.booking-id').text(response.bookId);
+
+                                $('.user-payment-completed').css({ 'display': 'block' });
+                                $('#booking-idReq').text(response.bookId);
+                                $('#booking-Trid').text(response.traineeID);
+                                $('#booking-Date').text(response.bookDateTime);
+                                $('#booking-SNum').text(response.seatNumber);
+
+                                recieveData = {
+                                    bookId: response.bookId,
+                                    traineeID: response.traineeID,
+                                    bookDateTime: response.bookDateTime,
+                                    seatNumber: response.seatNumber,
+                                    traineeName: response.traineeName,
+                                    traineeNIC: response.traineeNIC
+                                };
+                             
+                                // AJAX call using jQuery
+                                $.ajax({
+                                    url: '/Book/UpdateCount',  // Update with the actual controller endpoint
+                                    type: 'POST',
+                                    //contentType: 'application/json',
+                                    data:{ username: username }, // Replace 'someUsername' with actual username
+                                    success: function (response) {
+                                        console.log('Leave count updated successfully!');
+                                    },
+                                    error: function (error) {
+                                        alert('Error updating leave count: ' + error.responseText);
+                                    }
+                                });
+
+
+                                $.ajax({
+                                    url: '/Book/QRGen', // Adjust this URL to point to the correct endpoint for fetching the QR code image
+                                    type: 'POST', // Use POST if you are sending data; adjust to GET if the endpoint is for fetching without data
+                                    contentType: 'application/json', // Specifies the content type of the request
+                                    data: JSON.stringify(recieveData), // Replace with the data you need to send; if no data is needed, remove this line
+                                    xhrFields: {
+                                        responseType: 'blob' // Set response type to 'blob' to handle binary data (image)
+                                    },
+                                    success: function (blob) {
+                                        // Create a URL from the blob object
+                                        const url = URL.createObjectURL(blob);
+
+                                        // Create an <img> element and set the source to the blob URL
+                                        const img = document.createElement('img');
+                                        img.src = url;
+                                        img.alt = "QR Code"; // Add an alternative text for accessibility
+
+                                        // Append the <img> element to a specific container in your HTML
+                                        document.getElementById('qrCodeContainer').appendChild(img);
+
+                                        // Optional: Release the blob URL when it is no longer needed
+                                        img.onload = function () {
+                                            URL.revokeObjectURL(url); // Free memory once the image has been loaded
+                                        };
+
+                                    },
+                                    error: function (xhr, status, error) {
+                                        console.error('Error:', error);
+                                        alert(error);
+
+                                    }
+
+                                });
+                            },
+                            error: function (xhr, status, error) {
+                                console.error('Error:', error);
+                                alert(error);
+                            }
+                        });
+                    });
+                    // Fetch seat numbers
+                    $.ajax({
+                        url: '/Book/GetSeatNumbers',
+                        type: 'GET',
+                        data: { date: formattedDate},
+                        success: function (data) {
+                            if (data.length > 0) {
+                                console.log("Data Fetched");
+                                console.log(data);
+
+                                for (let n = 1; n < 81; n++) {
+                                    $(`#seat${n}`).css({
+                                        'background-color': '#D9D9D9',
+                                        'color': 'white',
+                                        'cursor': 'pointer',
+                                        'pointer-events': 'auto'
+                                    });
+                                }
+
+                                data.forEach(function (booking) {
+                                    let data = booking.seatNumber;
+                                    var id = booking.bookId;
+
+                                    console.log(booking);
+
+                                    $(`#seat${data}`).css({
+                                        'background-color': '#00B5EC',
+                                        'color': 'white',
+                                        'cursor': 'not-allowed',
+                                        'pointer-events': 'none'
+                                    });
+
+                                    $('#bookingid').text(id);
+
+                                    $('.my-button').addClass('hover-effect');
+
+                                    $('.my-button').on('click', function () {
+                                        $(this).toggleClass('clicked');
+                                    });
+                                });
+                            } else {
+                                $('#bookingid').text('-');
+
+                                for (let n = 1; n < 81; n++) {
+                                    $(`#seat${n}`).css({
+                                        'background-color': '#D9D9D9',
+                                        'color': 'white'
+                                    });
+                                }
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('Error fetching data:', error);
+                            alert('Error fetching data. Please try again.');
+                        }
+                    });
+
+
+                }
+
+                // Navigate to the previous month
+                prevMonthButton.addEventListener('click', () => {
+                    currentDate.setMonth(currentDate.getMonth() - 1);
+                    renderCalendar(currentDate);
+                });
+
+                // Navigate to the next month
+                nextMonthButton.addEventListener('click', () => {
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                    renderCalendar(currentDate);
+                });
+
+                // Initialize the calendar with the current date
+                renderCalendar(currentDate);
+            });
+            function downloadPdf() {
+
+                $.ajax({
+                    url: '/Book/PDFGen', // URL of the API endpoint
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(recieveData),
+                    xhrFields: {
+                        responseType: 'blob' // Handle response as a binary blob
+                    },
+                    success: function (blob) {
+                        // Create a URL for the blob
+                        const url = URL.createObjectURL(blob);
+
+                        // Create a link element to download the PDF
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = 'Booking Details.pdf'; // File name for the downloaded PDF
+
+                        // Append the link to the body and trigger a click
+                        document.body.appendChild(link);
+                        link.click();
+
+                        // Clean up by removing the link and revoking the URL
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+                        alert("Success");
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error generating PDF:', error);
+                        alert(error);
+                    }
+                });
+            }
+
+        </script>
+   
+</body>
+</html>

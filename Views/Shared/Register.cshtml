@@ -1,0 +1,131 @@
+﻿@model Seat_Reservation_System.Models.RegisterViewModel
+
+<style>
+    .registration-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 50px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .welcome-section {
+        flex: 1;
+        padding-right: 50px;
+        margin-bottom:120px
+    }
+
+    .welcome-text {
+        color: #00AEEF;
+        font-size: 4.5rem;
+       /*  margin-bottom: 60px; */
+    }
+
+    .sub-text {
+        color: #003366;
+        font-size: 1.25rem;
+       /*  margin-bottom: 60px; */
+    }
+
+    .form-section {
+        flex: 1;
+        max-width: 600px;
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+    }
+
+        .form-section h2 {
+            text-align: center;
+            color: #00AEEF;
+            margin-bottom: 30px;
+        }
+
+        .form-section input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .form-section button {
+            width: 100%;
+            padding: 10px;
+            background-color: #008000;
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+            .form-section button:hover {
+                background-color: #006400;
+            }
+
+        .form-section p {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+            .form-section p a {
+                color: #00AEEF;
+                text-decoration: none;
+            }
+
+                .form-section p a:hover {
+                    text-decoration: underline;
+                }
+</style>
+
+<main class="registration-container">
+    <div class="welcome-section">
+        <div class="welcome-text">Hello,<br> Newbie!</div>
+        <div class="sub-text">Join us and start reserving seats today!</div>
+    </div>
+
+    <div class="form-section">
+        <h2>Register Now!</h2>
+
+        <form asp-action="Register" method="post">
+            <div>
+                <input asp-for="Username" placeholder="Enter Username" />
+                <span asp-validation-for="Username"></span>
+            </div>
+
+            <div>
+                <input asp-for="Password" type="password" placeholder="Enter Password" />
+                <span asp-validation-for="Password"></span>
+            </div>
+
+            <div>
+                <input asp-for="ConfirmPassword" type="password" placeholder="Confirm Password" />
+                <span asp-validation-for="ConfirmPassword"></span>
+            </div>
+
+            <div>
+                <input asp-for="Email" type="email" placeholder="Enter the Email" />
+                <span asp-validation-for="Email"></span>
+            </div>
+
+            <div>
+                <input asp-for="TraineeName" placeholder="Enter Trainee Name" />
+                <span asp-validation-for="TraineeName"></span>
+            </div>
+
+            <div>
+                <input asp-for="TraineeNIC" placeholder="Enter Trainee NIC" />
+                <span asp-validation-for="TraineeNIC"></span>
+            </div>
+
+            <button type="submit">Register</button>
+        </form>
+
+        <p>
+            Already have an account? <a asp-action="Login">Login here</a>
+        </p>
+    </div>
+</main>
