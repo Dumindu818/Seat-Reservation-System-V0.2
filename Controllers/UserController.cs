@@ -86,7 +86,9 @@ namespace Seat_Reservation_System.Controllers
                     // Update the user details
                     currentUser.Username = model.Username;
                     currentUser.Email = model.Email;
-                    currentUser.Password = model.Password; // Make sure to hash the password in a real application
+                    currentUser.Password = model.Password;
+                    currentUser.TraineeName=model.TraineeName;
+                    currentUser.TraineeNIC = model.TraineeNIC; // Make sure to hash the password in a real application
 
                     // Mark the entity as modified
                     _context.Entry(currentUser).State = EntityState.Modified;
