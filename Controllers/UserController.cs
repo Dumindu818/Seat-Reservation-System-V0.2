@@ -219,19 +219,16 @@ namespace Seat_Reservation_System.Controllers
                     ViewBag.Id = user.Id;
                     ViewBag.Username = user.Username;
                     ViewBag.Email = user.Email;
-                    ViewBag.Password = user.Password;// Pass the email to the view
-                    if (HttpContext.Session.GetString("AdminLoggedIn") == "true")
-                    {
-                        var inquiry = _context.Inquiries.Find(id);
-                        if (inquiry == null)
-                        {
-                            return NotFound();
-                        }
+                    ViewBag.Password = user.Password;
 
-                        return View(inquiry);
+                    // Fetch the inquiry by ID
+                    var inquiry = _context.Inquiries.Find(id);
+                    if (inquiry == null)
+                    {
+                        return NotFound();
                     }
 
-                    return RedirectToAction("Login");
+                    return View(inquiry);
                 }
             }
 
@@ -239,7 +236,7 @@ namespace Seat_Reservation_System.Controllers
             return RedirectToAction("Login", "Account");
         }
 
-        public IActionResult UserInquiriesHistoryDetailsNotRep()
+        public IActionResult UserInquiriesHistoryDetailsNotRep(int id)
         {
             // Get the logged-in user's username from the session
             var username = HttpContext.Session.GetString("Username");
@@ -251,14 +248,23 @@ namespace Seat_Reservation_System.Controllers
                     ViewBag.Id = user.Id;
                     ViewBag.Username = user.Username;
                     ViewBag.Email = user.Email;
-                    ViewBag.Password = user.Password;// Pass the email to the view
-                    return View();
+                    ViewBag.Password = user.Password;
+
+                    // Fetch the inquiry by ID
+                    var inquiry = _context.Inquiries.Find(id);
+                    if (inquiry == null)
+                    {
+                        return NotFound();
+                    }
+
+                    return View(inquiry);
                 }
             }
 
             // If the session does not exist, redirect to the login page
             return RedirectToAction("Login", "Account");
         }
+
 
         public IActionResult SeatBooked()
         {
@@ -278,6 +284,7 @@ namespace Seat_Reservation_System.Controllers
 
             // If the session does not exist, redirect to the login page
             return RedirectToAction("Login", "Account");
+            return View();
         }
 
 

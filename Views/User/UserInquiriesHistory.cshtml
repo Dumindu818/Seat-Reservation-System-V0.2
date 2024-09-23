@@ -328,16 +328,22 @@
 
     <script>
         function navigateToInquiry(adminReplied, inquiryID) {
-    const action = adminReplied === 'True'
-        ? '@Url.Action("AdminInquiriesHistoryDetails", "User", new { id = "__INQUIRY_ID__" })'.replace("__INQUIRY_ID__", inquiryID)
-        : '@Url.Action("AdminInquiriesHistoryDetailsNotRep", "User", new { id = "__INQUIRY_ID__" })'.replace("__INQUIRY_ID__", inquiryID);
-    const form = document.getElementById(`form-${inquiryID}`);
-    form.action = action;
-    form.submit();
-}
+            console.log("Inquiry ID:", inquiryID);
+            if (inquiryID && inquiryID !== '0') {
+                const action = adminReplied === 'True'
+                    ? '@Url.Action("UserInquiriesHistoryDetails", "User", new { id = "__INQUIRY_ID__" })'.replace("__INQUIRY_ID__", inquiryID)
+                    : '@Url.Action("UserInquiriesHistoryDetailsNotRep", "User", new { id = "__INQUIRY_ID__" })'.replace("__INQUIRY_ID__", inquiryID);
 
+                const form = document.getElementById(`form-${inquiryID}`);
+                form.action = action;
+                form.submit();
+            } else {
+                alert('Invalid Inquiry ID');
+            }
+        }
 
     </script>
+
     
 </head>
 <body>
@@ -413,11 +419,14 @@
                                 </div>
                                 <div class="inquiry-status">
                                     @if (inquiry.AdminReplied)
+
                                     {
                                         <img class="status-icon" src="~/assets/vectors/vector_20_x2 (1).svg" style="width: 10px; height: 10px; vertical-align: middle;" />
                                         <span class="status-text">Admin Replied</span>
                                     }
+
                                     else
+
                                     {
                                         <span class="status-textrep">Not Replied</span>
                                     }
@@ -426,15 +435,15 @@
                             </div>
 
                             <!-- Hidden Form to Submit Inquiry Data -->
-                            <form id="form-@inquiry.InquiryId" method="post" style="display:none;" action="@Url.Action("NavigateInquiry", "Admin")">
-                                @Html.HiddenFor(modelItem => inquiry.InquiryId)
+                            <form id="form-@inquiry.InquiryId" method="post" style="display:none;">
+                                @Html.HiddenFor(modelItem => inquiry.InquiryId) <!-- Ensure this is correctly bound -->
                                 @Html.HiddenFor(modelItem => inquiry.Title)
                                 @Html.HiddenFor(modelItem => inquiry.Description)
                                 @Html.HiddenFor(modelItem => inquiry.InquiryDate)
                                 @Html.HiddenFor(modelItem => inquiry.AdminReplied)
                                 @Html.HiddenFor(modelItem => inquiry.AdminReply)
-                                <!-- Add any other fields you need to pass -->
                             </form>
+
                         }
                     }
                     else

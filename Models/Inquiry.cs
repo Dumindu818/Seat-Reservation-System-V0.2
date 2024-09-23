@@ -5,6 +5,8 @@
         public int InquiryId { get; set; }
 
         public int UserId { get; set; }
+
+        //public User User { get; set; }  // Navigation property
         public string Title { get; set; }
 
         public string Description { get; set; }
