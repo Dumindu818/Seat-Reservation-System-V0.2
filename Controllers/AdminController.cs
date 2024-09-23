@@ -1,17 +1,26 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Seat_Reservation_System.Models;
 using System.Diagnostics;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Seat_Reservation_System.Controllers
 {
     public class AdminController : Controller
     {
+        private readonly string _connectionString;
+     
+
         private readonly ApplicationDbContext _context;
-        public AdminController(ApplicationDbContext context)
+
+        public AdminController(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
         }
+
         // GET: Admin/Login
         public IActionResult Login()
         {
@@ -103,27 +112,84 @@ namespace Seat_Reservation_System.Controllers
             return RedirectToAction("Login");
         }
 
-        public IActionResult AdminInquiriesHistorySub(int id)
+public IActionResult AdminInquiriesHistorySub(int id)
+{
+    if (HttpContext.Session.GetString("AdminLoggedIn") == "true")
+    {
+        string query = "SELECT * FROM Inquiries WHERE InquiryId = @id";
+
+        using (SqlConnection conn = new SqlConnection(_connectionString))
         {
-            if (HttpContext.Session.GetString("AdminLoggedIn") == "true")
+            conn.Open();
+            using (SqlCommand cmd = new SqlCommand(query, conn))
             {
-                var inquiry = _context.Inquiries.Find(id);
-                if (inquiry == null)
+                cmd.Parameters.AddWithValue("@id", id);
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
                 {
-                    return NotFound();
+                    if (reader.Read())
+                    {
+                        var inquiry = new Inquiry
+                        {
+                            InquiryId = (int)reader["InquiryId"],
+                            UserId = reader["UserId"].ToString(),
+                            Title = reader["Title"].ToString(),
+                            Description = reader["Description"].ToString(),
+                            InquiryDate = DateOnly.FromDateTime((DateTime)reader["InquiryDate"]),
+                            AdminReplied = (bool)reader["AdminReplied"],
+                            AdminReply = reader["AdminReply"] != DBNull.Value ? reader["AdminReply"].ToString() : null
+                        };
+
+                        return View(inquiry);
+                    }
+                    else
+                    {
+                        return NotFound();
+                    }
                 }
-
-                return View(inquiry);
             }
-
-            return RedirectToAction("Login");
         }
+    }
+
+    return RedirectToAction("Login");
+}
+
 
         public IActionResult AdminInquiriesHistoryNotSub(int id)
         {
             if (HttpContext.Session.GetString("AdminLoggedIn") == "true")
             {
-                var inquiry = _context.Inquiries.Find(id);
+                string query = "SELECT * FROM Inquiries WHERE InquiryId = @inquiryid";
+                Inquiry inquiry = null;
+
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        // Add parameter to prevent SQL injection
+                        command.Parameters.AddWithValue("@inquiryid", id);
+
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                // Assuming you have an Inquiry class with these properties
+                                inquiry = new Inquiry
+                                {
+                                    InquiryId = (int)reader["InquiryId"],
+                                    Title = reader["Title"].ToString(),
+                                    Description = reader["Description"].ToString(),
+                                    UserId = reader["UserId"].ToString(),
+                                    InquiryDate = DateOnly.FromDateTime((DateTime)reader["InquiryDate"]),
+                                    AdminReplied = (bool)reader["AdminReplied"]
+                                };
+                            }
+                        }
+                    }
+                }
+
                 if (inquiry == null)
                 {
                     return NotFound();
@@ -133,29 +199,109 @@ namespace Seat_Reservation_System.Controllers
             }
 
             return RedirectToAction("Login");
+
         }
+
 
         [HttpPost]
         public IActionResult EditReply(int id, string AdminReply)
         {
-            // Find the inquiry by id
-            var inquiry = _context.Inquiries.Find(id);
+            string query = "UPDATE Inquiries SET AdminReply = @AdminReply, AdminReplied = 1 WHERE InquiryId = @id";
 
-            if (inquiry != null)
+            using (SqlConnection conn = new SqlConnection(_connectionString))
             {
-                // Update the reply and mark it as replied
-                inquiry.AdminReply = AdminReply;
-                inquiry.AdminReplied = true;
+                conn.Open();
+                using (SqlCommand command = new SqlCommand(query, conn))
+                {
+                    // Add parameters to avoid SQL injection
+                    command.Parameters.AddWithValue("@id", id);
+                    command.Parameters.AddWithValue("@AdminReply", AdminReply);
 
-                // Save changes to the database
-                _context.SaveChanges();
+                    // Execute the query
+                    int rowsAffected = command.ExecuteNonQuery();
+
+                    // Check if the update was successful
+                    if (rowsAffected > 0)
+                    {
+                        return RedirectToAction("AdminInquiries");
+                    }
+                }
             }
 
-            // Redirect back to the inquiries list
-            return RedirectToAction("AdminInquiries");
+            // If the update failed, you can return an error or the same view
+            return BadRequest();
         }
 
 
+
+        [HttpGet]
+        public IActionResult GetBookingsByDate(string date,string number)
+        {
+            var bookings = new List<Bookings>();
+            string query = "SELECT * FROM Booking WHERE BookDateTime = @date AND SeatNumber = @seatNumber AND isExpire = 0";
+
+            if (string.IsNullOrEmpty(date))
+            {
+                Console.Write("Missing");
+            }
+
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                using (SqlCommand command = new SqlCommand(query, conn))
+                {
+                    command.Parameters.AddWithValue("@date", date);
+                    command.Parameters.AddWithValue("@seatNumber", number);
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            bookings.Add(new Bookings
+                            {
+                                BookId = (int)reader["BookId"],
+                                SeatNumber = reader["SeatNumber"]?.ToString() ?? string.Empty,
+                                BookDateTime = (DateTime)reader["BookDateTime"],
+                                TraineeID = reader["TraineeId"].ToString(),
+                                TraineeNIC = reader["TraineeNIC"].ToString(),
+                                TraineeName = reader["TraineeName"].ToString()
+
+                            });
+
+                        }
+                        reader.Close();
+                        
+                    }
+
+                }
+            }
+            return Json(bookings);
+
+        }
+
+        [HttpGet]
+        public IActionResult DeleteBookingsBySeatID(int id)
+        {
+            
+            string query = "UPDATE Booking SET isExpire = 1 WHERE BookId = @id";
+            
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                using (SqlCommand command = new SqlCommand(query, conn))
+                {
+                    command.Parameters.AddWithValue("@id", id);
+                    int exe = command.ExecuteNonQuery();
+
+                    if (exe > 0)
+                    {
+                        return Ok();
+                    }
+                  
+                }
+            }
+
+            return BadRequest();
+        }
 
     }
 }

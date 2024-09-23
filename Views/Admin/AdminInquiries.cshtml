@@ -417,7 +417,7 @@
                             </div>
 
                             <!-- Hidden Form to Submit Inquiry Data -->
-                            <form id="form-@inquiry.InquiryId" method="post" style="display:none;" action="@Url.Action("NavigateInquiry", "Admin")">
+                            <form id="form-@inquiry.InquiryId" method="post" style="display:non;" action="@Url.Action("NavigateInquiry", "Admin")">
                                 @Html.HiddenFor(modelItem => inquiry.InquiryId)
                                 @Html.HiddenFor(modelItem => inquiry.Title)
                                 @Html.HiddenFor(modelItem => inquiry.Description)

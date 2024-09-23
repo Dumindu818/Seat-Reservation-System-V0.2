@@ -309,12 +309,15 @@
                 <div class="text-content">
                     <p>@Model.Description</p>
                 </div>
-
+                <div class="text-content">
+                   @Model.AdminReply
+                </div>
                 <!-- Adding the form to allow editing of the reply -->
                 <form asp-action="EditReply" asp-controller="Admin" method="post">
+                    <input type="hidden" name="id" value="@Model.InquiryId" />
                     <div class="reply">Your Reply:</div>
                     <div class="text-content">
-                        <textarea name="AdminReply" class="text-content">@Model.AdminReply</textarea>
+                        <input asp-for="AdminReply" type="text" name="AdminReply" class="text-content"></input>
                     </div>
                     <button type="submit" class="sub-button">
                         <span>Submit</span>

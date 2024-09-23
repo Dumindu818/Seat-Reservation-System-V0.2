@@ -262,7 +262,41 @@
             box-sizing: border-box;
 
 
-        }</style>
+        }
+        
+
+        .title, .description, .reply {
+            font-weight: 600;
+            font-size: 20px;
+            color: #00B5EC;
+            margin-bottom: 15px;
+            width: 100%;
+            text-align: left;
+        }
+
+        .text-content {
+            border-radius: 20px;
+            background: rgba(192, 249, 255, 0.28);
+            padding: 15px 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+            .text-content p {
+                font-weight: 500;
+                font-size: 20px;
+                color: #00B5EC;
+                margin: 0;
+            }
+    #admin{
+        color:white;
+    }
+    
+    #adminR{
+        background-color:#4172EB;
+    }
+    
+    </style>
 </head>
 <body>
     <div class="admin-dashboard">
@@ -337,8 +371,8 @@
                 </div>
 
                 <div class="reply">Admin Reply:</div>
-                <div class="text-content">
-                    <p>Admin Not Replied Yet</p>
+                <div class="text-content" id="adminR">
+                    <p id="admin">Admin will reply soon</p>
                 </div>
 
                 

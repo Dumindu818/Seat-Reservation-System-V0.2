@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Seat_Reservation_System.Models;
 
+
 public partial class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext()
@@ -20,7 +21,7 @@ public partial class ApplicationDbContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=SeatReservationDb;Trusted_Connection=True;");
+            optionsBuilder.UseSqlServer(@"Server=(localdb)\\mssqllocaldb;database=SeatReservationDb;integrated security=true;TrustServerCertificate=true;");
         }
     }
 

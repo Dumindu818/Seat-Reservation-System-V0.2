@@ -21,7 +21,7 @@ namespace Seat_Reservation_System.Models
         public int LeaveCount { get; set; }
         public DateTime LastUpdated { get; set; } = DateTime.Now;
 
-        public virtual ICollection<Inquiry> Inquiries { get; set; }
+        //public virtual ICollection<Inquiry> Inquiries { get; set; }
     }
 
 

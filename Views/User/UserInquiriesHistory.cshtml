@@ -327,23 +327,18 @@
         }</style>
 
     <script>
-        function navigateToInquiry(adminReplied, inquiryID) {
-            console.log("Inquiry ID:", inquiryID);
-            if (inquiryID && inquiryID !== '0') {
-                const action = adminReplied === 'True'
-                    ? '@Url.Action("UserInquiriesHistoryDetails", "User", new { id = "__INQUIRY_ID__" })'.replace("__INQUIRY_ID__", inquiryID)
-                    : '@Url.Action("UserInquiriesHistoryDetailsNotRep", "User", new { id = "__INQUIRY_ID__" })'.replace("__INQUIRY_ID__", inquiryID);
+        
 
-                const form = document.getElementById(`form-${inquiryID}`);
-                form.action = action;
-                form.submit();
-            } else {
-                alert('Invalid Inquiry ID');
-            }
+         function navigateToInquiry(adminReplied, inquiryID) {
+            const action = adminReplied === 'True'
+                ? '@Url.Action("UserInquiriesHistoryDetails", "User", new { id = "__INQUIRY_ID__" })'.replace("__INQUIRY_ID__", inquiryID)
+                : '@Url.Action("UserInquiriesHistoryDetailsNotRep", "User", new { id = "__INQUIRY_ID__" })'.replace("__INQUIRY_ID__", inquiryID);
+            const form = document.getElementById(`form-${inquiryID}`);
+            form.action = action;
+            form.submit();
         }
 
     </script>
-
     
 </head>
 <body>
@@ -408,7 +403,7 @@
                     </div>
                 </a>
                 <div class="line-1"></div>
-                <div class="inquiry-list">
+               <div class="inquiry-list">
                     @if (Model != null && Model.Any())
                     {
                         foreach (var inquiry in Model.OrderBy(i => i.AdminReplied).ThenBy(i => i.InquiryDate))
@@ -418,32 +413,31 @@
                                     @Html.DisplayFor(modelItem => inquiry.Title)
                                 </div>
                                 <div class="inquiry-status">
-                                    @if (inquiry.AdminReplied)
-
+                                    @if (!inquiry.AdminReplied)
                                     {
-                                        <img class="status-icon" src="~/assets/vectors/vector_20_x2 (1).svg" style="width: 10px; height: 10px; vertical-align: middle;" />
-                                        <span class="status-text">Admin Replied</span>
+                                        <img class="status-icon" src="~/assets/vectors/vector_20_x2 (1).svg" alt="Not Replied" />
+                                        <span class="status-text">Not Replied</span>
                                     }
-
                                     else
-
                                     {
-                                        <span class="status-textrep">Not Replied</span>
+                                        <span class="status-textrep">Replied</span>
                                     }
                                 </div>
-                                <div class="inquiry-date">@inquiry.InquiryDate.ToString("dd/MM/yyyy")</div>
+                                <div class="inquiry-date">
+                                    @inquiry.InquiryDate.ToString("dd/MM/yyyy")
+                                </div>
                             </div>
 
                             <!-- Hidden Form to Submit Inquiry Data -->
-                            <form id="form-@inquiry.InquiryId" method="post" style="display:none;">
-                                @Html.HiddenFor(modelItem => inquiry.InquiryId) <!-- Ensure this is correctly bound -->
+                            <form id="form-@inquiry.InquiryId" method="post" style="display:none;" action="@Url.Action("NavigateInquiry", "Admin")">
+                                @Html.HiddenFor(modelItem => inquiry.InquiryId)
                                 @Html.HiddenFor(modelItem => inquiry.Title)
                                 @Html.HiddenFor(modelItem => inquiry.Description)
                                 @Html.HiddenFor(modelItem => inquiry.InquiryDate)
                                 @Html.HiddenFor(modelItem => inquiry.AdminReplied)
                                 @Html.HiddenFor(modelItem => inquiry.AdminReply)
+                                <!-- Add any other fields you need to pass -->
                             </form>
-
                         }
                     }
                     else
@@ -453,8 +447,8 @@
                         </div>
                     }
                 </div>
-
-                
+           
+            
             </div>
         </div>
 

@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Seat_Reservation_System.Models;
 using System.Data.SqlTypes;
@@ -8,6 +10,15 @@ namespace Seat_Reservation_System.Controllers
 {
     public class UserController : Controller
     {
+        private readonly string _connectionString;
+        private readonly ApplicationDbContext _context;
+
+        public UserController(ApplicationDbContext context, IConfiguration configuration)
+        {
+            _context = context;
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
+        }
+
         public IActionResult Dashboard()
         {
             // Get the logged-in user's username from the session
@@ -23,12 +34,7 @@ namespace Seat_Reservation_System.Controllers
             return RedirectToAction("Login", "Account");
         }
 
-        private readonly ApplicationDbContext _context;
-
-        public UserController(ApplicationDbContext context)
-        {
-            _context = context;
-        }
+       
 
         public IActionResult UserProfile()
         {
@@ -74,39 +80,42 @@ namespace Seat_Reservation_System.Controllers
         }
 
         [HttpPost]
-        public IActionResult UpdateUserProfile(User model, string confirmPassword)
+        public IActionResult UpdateUserProfile([FromBody] User model)
         {
-            // Check if the model is valid and the password matches the confirmation password
-            if (ModelState.IsValid && model.Password == confirmPassword)
-            {
-                // Find the current user based on the username from the session
-                var currentUser = _context.Users.FirstOrDefault(u => u.Username == model.Username);
-                if (currentUser != null)
+           
+                var currentUsername = HttpContext.Session.GetString("Username");
+
+                if (!string.IsNullOrEmpty(currentUsername))
                 {
-                    // Update the user details
-                    currentUser.Username = model.Username;
-                    currentUser.Email = model.Email;
-                    currentUser.Password = model.Password;
-                    currentUser.TraineeName=model.TraineeName;
-                    currentUser.TraineeNIC = model.TraineeNIC; // Make sure to hash the password in a real application
+                    string query = "UPDATE Users SET Username = @Username, Email = @Email, Password = @Password , TraineeName = @traineeName , TraineeNIC = @traineeNIC WHERE Username = @CurrentUsername";
 
-                    // Mark the entity as modified
-                    _context.Entry(currentUser).State = EntityState.Modified;
+                    using (SqlConnection conn = new SqlConnection(_connectionString))
+                    {
+                        conn.Open();
+                        using (SqlCommand cmd = new SqlCommand(query, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@Username", model.Username);
+                            cmd.Parameters.AddWithValue("@Email", model.Email);
+                            cmd.Parameters.AddWithValue("@Password", model.Password); // Make sure to hash the password in a real application
+                            cmd.Parameters.AddWithValue("@CurrentUsername", currentUsername);
+                            cmd.Parameters.AddWithValue("@traineeName",model.TraineeName);
+                            cmd.Parameters.AddWithValue("@traineeNIC", model.TraineeNIC);
 
-                    // Save changes to the database
-                    _context.SaveChanges();
+                        int rowsAffected = cmd.ExecuteNonQuery();
+                            if (rowsAffected > 0)
+                            {
+                                // Update session information if needed
+                                HttpContext.Session.SetString("Username", model.Username);
 
-                    // Update session information if needed
-                    HttpContext.Session.SetString("Username", currentUser.Username);
-
-                    // Redirect to Index page in Home folder
-                    return RedirectToAction("Index", "Home");
+                                // Redirect to Index page in Home folder
+                                return RedirectToAction("Index", "Home");
+                            }
+                        }
+                    }
                 }
-            }
-
-            // If validation fails or password doesn't match, return to the edit view with the model data
-            ModelState.AddModelError("", "Password confirmation does not match or input is invalid.");
-            return View("UserProfileEdit", model);
+           
+                return BadRequest();
+        ;
         }
 
 
@@ -174,36 +183,58 @@ namespace Seat_Reservation_System.Controllers
 
         public IActionResult UserInquiriesHistory()
         {
+            // Get the logged-in user's username from the session
+            var username = HttpContext.Session.GetString("Username");
+            if (!string.IsNullOrEmpty(username))
+            {
+                ViewBag.Username = username;
 
-                // Get the logged-in user's username from the session
-                var username = HttpContext.Session.GetString("Username");
-                if (!string.IsNullOrEmpty(username))
+                // Prepare the SQL query to get the user's inquiries
+                string query = @"
+                                SELECT 
+                                    *
+                                FROM Inquiries
+                                WHERE UserId = @Username
+                                ORDER BY 
+                                    AdminReplied DESC, 
+                                    InquiryDate ASC";
+
+                List<Inquiry> inquiries = new List<Inquiry>();
+
+                using (SqlConnection conn = new SqlConnection(_connectionString)) // Ensure _connectionString is defined in your class
                 {
-                    var user = _context.Users.FirstOrDefault(u => u.Username == username);
-                    if (user != null)
+                    conn.Open();
+                    using (SqlCommand command = new SqlCommand(query, conn))
                     {
-                        var inquiries = _context.Inquiries
-                            .Where(i => i.UserId == user.Id)
-                            .Select(i => new Inquiry
-                            {
-                                Title = i.Title ?? "No Title", // Handle null title
-                                InquiryDate = i.InquiryDate, // If InquiryDate is not nullable
-                                AdminReplied = i.AdminReplied // If AdminReplied is not nullable
-                            })
-                            .OrderByDescending(i => i.AdminReplied) // AdminReplied inquiries at the top
-                            .ThenBy(i => i.InquiryDate) // Sort by InquiryDate for inquiries with the same AdminReplied status
-                            .ToList();
+                        // Add parameter to avoid SQL injection
+                        command.Parameters.AddWithValue("@Username", username);
 
-                        return View(inquiries);
+                        // Execute the query
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                inquiries.Add(new Inquiry
+                                {
+                                    InquiryId = (int)reader["InquiryId"],
+                                    Title = reader["Title"].ToString(),
+                                    Description = reader["Description"].ToString(),
+                                    UserId = reader["UserId"].ToString(),
+                                    InquiryDate = DateOnly.FromDateTime((DateTime)reader["InquiryDate"]),
+                                    AdminReplied = (bool)reader["AdminReplied"],
+                                    AdminReply = reader["AdminReply"].ToString()
+                                });
+                            }
+                        }
                     }
                 }
 
-                // If the session does not exist, redirect to the login page
-                return RedirectToAction("Login", "Account");
-            
+                return View(inquiries); // Pass the inquiries list to the view
+            }
 
+            // If the session does not exist, redirect to the login page
+            return RedirectToAction("Login", "Account");
         }
-
 
 
 
@@ -211,25 +242,46 @@ namespace Seat_Reservation_System.Controllers
         {
             // Get the logged-in user's username from the session
             var username = HttpContext.Session.GetString("Username");
+
             if (!string.IsNullOrEmpty(username))
             {
-                var user = _context.Users.FirstOrDefault(u => u.Username == username);
-                if (user != null)
+                string query = "SELECT * FROM Inquiries WHERE InquiryId = @inquiryid";
+                Inquiry inquiry = null;
+
+                using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
-                    ViewBag.Id = user.Id;
-                    ViewBag.Username = user.Username;
-                    ViewBag.Email = user.Email;
-                    ViewBag.Password = user.Password;
+                    connection.Open();
 
-                    // Fetch the inquiry by ID
-                    var inquiry = _context.Inquiries.Find(id);
-                    if (inquiry == null)
+                    using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        return NotFound();
-                    }
+                        // Add parameter to prevent SQL injection
+                        command.Parameters.AddWithValue("@inquiryid", id);
 
-                    return View(inquiry);
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                // Assuming you have an Inquiry class with these properties
+                                inquiry = new Inquiry
+                                {
+                                    InquiryId = (int)reader["InquiryId"],
+                                    Title = reader["Title"].ToString(),
+                                    Description = reader["Description"].ToString(),
+                                    UserId = reader["UserId"].ToString(),
+                                    InquiryDate = DateOnly.FromDateTime((DateTime)reader["InquiryDate"]),
+                                    AdminReplied = (bool)reader["AdminReplied"],
+                                    AdminReply = reader["AdminReply"].ToString()
+                                };
+                            }
+                        }
+                    }
                 }
+                if (inquiry == null)
+                {
+                    return NotFound();
+                }
+
+                return View(inquiry);
             }
 
             // If the session does not exist, redirect to the login page
@@ -240,25 +292,45 @@ namespace Seat_Reservation_System.Controllers
         {
             // Get the logged-in user's username from the session
             var username = HttpContext.Session.GetString("Username");
+
             if (!string.IsNullOrEmpty(username))
             {
-                var user = _context.Users.FirstOrDefault(u => u.Username == username);
-                if (user != null)
+                string query = "SELECT * FROM Inquiries WHERE InquiryId = @inquiryid";
+                Inquiry inquiry = null;
+
+                using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
-                    ViewBag.Id = user.Id;
-                    ViewBag.Username = user.Username;
-                    ViewBag.Email = user.Email;
-                    ViewBag.Password = user.Password;
+                    connection.Open();
 
-                    // Fetch the inquiry by ID
-                    var inquiry = _context.Inquiries.Find(id);
-                    if (inquiry == null)
+                    using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        return NotFound();
-                    }
+                        // Add parameter to prevent SQL injection
+                        command.Parameters.AddWithValue("@inquiryid", id);
 
-                    return View(inquiry);
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                // Assuming you have an Inquiry class with these properties
+                                inquiry = new Inquiry
+                                {
+                                    InquiryId = (int)reader["InquiryId"],
+                                    Title = reader["Title"].ToString(),
+                                    Description = reader["Description"].ToString(),
+                                    UserId = reader["UserId"].ToString(),
+                                    InquiryDate = DateOnly.FromDateTime((DateTime)reader["InquiryDate"]),
+                                    AdminReplied = (bool)reader["AdminReplied"]
+                                };
+                            }
+                        }
+                    }
                 }
+                if (inquiry == null)
+                {
+                    return NotFound();
+                }
+
+                return View(inquiry);
             }
 
             // If the session does not exist, redirect to the login page
@@ -284,7 +356,6 @@ namespace Seat_Reservation_System.Controllers
 
             // If the session does not exist, redirect to the login page
             return RedirectToAction("Login", "Account");
-            return View();
         }
 
 
@@ -292,31 +363,39 @@ namespace Seat_Reservation_System.Controllers
         public IActionResult SubmitInquiry(string Title, string Description)
         {
             var username = HttpContext.Session.GetString("Username");
+
             if (!string.IsNullOrEmpty(username))
             {
-                var user = _context.Users.FirstOrDefault(u => u.Username == username);
-                if (user != null)
+                
+                // Now, create a SQL query to insert the inquiry
+                string insertInquiryQuery = @"
+                INSERT INTO Inquiries (UserId, Title, Description, InquiryDate, AdminReplied)
+                VALUES (@UserId, @Title, @Description, @InquiryDate, @AdminReplied)";
+
+                using (var conn = new SqlConnection(_connectionString))
                 {
-                    // Create a new Inquiry object
-                    var inquiry = new Inquiry
+                    conn.Open();
+
+                    // Use SqlCommand to execute the insert query
+                    using (var command = new SqlCommand(insertInquiryQuery, conn))
                     {
-                        UserId = user.Id,
-                        Title = Title,
-                        Description = Description,
-                        InquiryDate = DateOnly.FromDateTime(DateTime.Now), // Save current date
-                        AdminReplied = false
-                    };
+                        // Add parameters for the SQL query
+                        command.Parameters.AddWithValue("@UserId", username);
+                        command.Parameters.AddWithValue("@Title", Title);
+                        command.Parameters.AddWithValue("@Description", Description);
+                        command.Parameters.AddWithValue("@InquiryDate", DateTime.Now); // Inquiry date is the current date
+                        command.Parameters.AddWithValue("@AdminReplied", false); // AdminReplied is initially false
 
-                    // Add the inquiry to the database
-                    _context.Inquiries.Add(inquiry);
-                    _context.SaveChanges();
-
-                    // Redirect to the UserInquiriesHistory view
-                    return RedirectToAction("UserInquiriesHistory", "User");
+                        // Execute the insert command
+                        command.ExecuteNonQuery();
+                    }
                 }
+
+                // Redirect to the UserInquiriesHistory view after successful insert
+                return RedirectToAction("UserInquiriesHistory", "User");
             }
 
-            // If user is not found or session expired, redirect to login
+            // If session is expired or username not found, redirect to login
             return RedirectToAction("Login", "Account");
         }
 

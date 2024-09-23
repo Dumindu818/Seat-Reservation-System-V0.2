@@ -9,6 +9,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit My Profile</title>
+     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         body {
             margin: 0;
@@ -258,42 +259,51 @@
             margin-top: 20px;
         }
     </style>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        $(document).ready(function () {
+    
+    $(document).ready(function () {
             $('.group-13').on('click', function (e) {
                 e.preventDefault();
 
-                var password = $('.password-input').val();
-                var confirmPassword = $('.confirm-password-input').val();
+        var password = $('.password-input').val();
+        var confirmPassword = $('.confirm-password-input').val();
 
-                if (password !== confirmPassword) {
-                    if (!$('.warning').length) {
-                        $('.container-4').append('<div class="warning">Passwords do not match!</div>');
-                    }
-                } else {
-                    // Submit the form via AJAX
-                    $.ajax({
-                        type: "POST",
-                        url: '@Url.Action("UpdateUserProfile", "User")',
-                        data: {
-                            Username: $('.user-input').val(),
-                            Password: password,
-                            Email: $('.email-input').val(),
-                            TraineeName: $('.userTName-input').val(),
-                            TraineeNIC: $('.userTNIC-input').val(),
-                        },
-                        success: function () {
-                            window.location.href = '@Url.Action("UserProfile", "User")';
-                        },
-                        error: function () {
-                            alert("An error occurred while updating the profile.");
-                        }
-                    });
+        var userData = {
+            Username: $('.user-input').val(),
+            Password: password,
+            Email: $('.email-input').val(),
+            TraineeName: $('.userTName-input').val(),
+            TraineeNIC: $('.userTNIC-input').val(),
+        };
+
+        if (password !== confirmPassword) {
+            if (!$('.warning').length) {
+                $('.container-4').append('<div class="warning">Passwords do not match!</div>');
+            }
+            console.log(userData);
+        } else {
+            console.log(userData);
+            // Submit the form via AJAX
+            $.ajax({
+                type: "POST",
+                url: '/User/UpdateUserProfile',
+                contentType: 'application/json',
+                data: JSON.stringify(userData),
+                success: function () {
+                    window.location.href = '/User/UserProfile'; // Adjusted this for consistency
+                },
+                error: function () {
+                    alert("An error occurred while updating the profile.");
                 }
             });
-        });
+        }
+
+       });
+    });
+
+    
     </script>
+
 </head>
 <body>
     <div class="admin-dashboard">
@@ -346,7 +356,7 @@
                 </button>
             </div>
             <div class="container-4">
-                <div class="profile-overview">Edit My Profile</div> 
+                <div class="profile-overview">Edit My Profile</div>
                 <div class="line-1"></div>
                 <div class="container-7">
                     <span class="username">Username</span>
@@ -363,7 +373,7 @@
                 <div class="container-3">
                     <span class="password">Password</span>
                     <div class="group-1">
-                        <input class="password-input" type="password" placeholder="Password" />
+                        <input class="password-input" type="text" placeholder="Password" value="@ViewBag.Password" />
                     </div>
                 </div>
                 <div class="container-3">
@@ -384,12 +394,17 @@
                         <input class="userTNIC-input" type="text" placeholder="Trainee NIC" value="@ViewBag.TraineeNIC" />
                     </div>
                 </div>
-                <div class="group-13">
+                  <div class="group-13">
                     <span class="pay-now-1">Save</span>
                 </div>
                 
             </div>
         </div>
-    </div>
+    </div
+
+ 
+
+ 
+
 </body>
 </html>
